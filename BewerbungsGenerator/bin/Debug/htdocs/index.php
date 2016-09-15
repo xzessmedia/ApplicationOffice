@@ -12,20 +12,44 @@ $action = $_GET['action'];
 if (isset($action)) {
 	switch ($action) {
 		case "contact":
-		$name 		= $_POST['name'];
-		$email	 	= $_POST['email'];
-		$datum 		= $_POST['vorstellungsdatum'];
-		$time	 	= $_POST['vorstellungszeit'];
-		$infomsg 	= $_POST['message'];
 		
-		$result = $bewerbung->Sendmail($name,$email,$infomsg,$datum,$time,"tim.koepsel@me.com");
+		$token = $_GET['token'];
+		if(isset($token))
+		{
+			$jsonfile = $bewerbung->decrypt($token);
 		
-		if ($result == true) {
-			$bewerbung->ShowInfoBox("Info","<p>Bewerber wurde kontaktiert und über den Termin informiert! Vielen Dank für das gegenseitige Interesse!</p>");
-		}else {
-			$bewerbung->ShowInfoBox("Achtung","<p>Nachricht konnte aus unbekannten Gründen nicht abgesendet werden!</p>");
+		
+			$url =  $siteurl.'/data/'.$jsonfile;
+			if (filter_var($url, FILTER_VALIDATE_URL) === FALSE) {
+				die('Token is incorrect, no authorisation granted!');
+			}
+
+			$content = file_get_contents($url);
+			$json = json_decode($content);
+			$json_array = json_decode($content,true);
+		
+			$mailadress = $json->PersonalCollectionData->Applicant_MailAdress;
+		
+
+			
+		
+		
+			$name 		= $_POST['name'];
+			$email	 	= $_POST['email'];
+			$datum 		= $_POST['vorstellungsdatum'];
+			$time	 	= $_POST['vorstellungszeit'];
+			$infomsg 	= $_POST['message'];
+			
+			$result = $bewerbung->Sendmail($name,$email,$infomsg,$datum,$time,$mailadress);
+			
+			
+			
+			if ($result == true) {
+				$bewerbung->ShowInfoBox("Info","<p>Bewerber wurde kontaktiert und über den Termin informiert! Vielen Dank für das gegenseitige Interesse!</p>");
+			}else {
+				$bewerbung->ShowInfoBox("Achtung","<p>Nachricht konnte aus unbekannten Gründen nicht abgesendet werden!</p>");
+			}
 		}
-		
 		break;
 		case "generate":
 		$filename 	= $_GET['filename'];
@@ -154,7 +178,7 @@ if (isset($token)) {
 			
 		}
 
-		$bewerbung->GenerateApplication($url, $contactname, $contactgender, $applicant_picture, $applicant_name,$applicant_jobtitle,$applicant_birthdate,$applicant_adress, $applicant_phone,$applicant_mailadress,$applicant_twitter,$applicant_facebook,$applicant_github,$applicant_xing, $introtext,$cvdata_lebenslauf, $cvdata_abschluesse, $portfoliodata,$aboutdata); 
+		$bewerbung->GenerateApplication($token, $url, $contactname, $contactgender, $applicant_picture, $applicant_name,$applicant_jobtitle,$applicant_birthdate,$applicant_adress, $applicant_phone,$applicant_mailadress,$applicant_twitter,$applicant_facebook,$applicant_github,$applicant_xing, $introtext,$cvdata_lebenslauf, $cvdata_abschluesse, $portfoliodata,$aboutdata); 
 		
 		
 	

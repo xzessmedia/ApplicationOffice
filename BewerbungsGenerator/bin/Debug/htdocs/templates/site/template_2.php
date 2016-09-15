@@ -107,6 +107,8 @@
 							
 							<p><?php echo $anrede; ?>,</p>
 							<p><?php echo $introtext; ?></p>
+							<p>Mit freundlichen Grüßen,</p>
+							<p><?php echo $applicant_name; ?></p>
 							<footer>
 								<a href="#portfolio" class="button scrolly">Meine Referenzen</a>
 							</footer>
@@ -176,12 +178,12 @@
 						<div class="container">
 
 							<header>
-								<h2>Interesse bekommen? <strong><br> Nehmen Sie mit mir Kontakt auf!</strong></h2>
+								<h2>Interesse? <strong><br> Nehmen Sie mit mir Kontakt auf!</strong></h2>
 							</header>
 
 							<p>Sollte ich Ihr Interesse geweckt haben, freue ich mich über einen Vorstellungstermin bei Ihnen! Nutzen Sie dazu ganz komfortabel das nachfolgende Formular oder rufen Sie mich an unter: <b><?php echo $applicant_phone; ?></b>. Postalisch erreichen Sie mich unter <b><?php echo $applicant_adress; ?></b></p>
 							
-							<form method="post" action="index.php?action=contact&token=<?php echo $token; ?>">
+							<form method="post" action="index.php?action=contact">
 								<div class="row half">
 									<div class="6u"><input type="text" class="text" name="name" placeholder="Name" /></div>
 									<div class="6u"><input type="text" class="text" name="email" placeholder="Email" /></div>

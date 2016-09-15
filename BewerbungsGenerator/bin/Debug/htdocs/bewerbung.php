@@ -34,36 +34,6 @@ class Bewerbungsmappe
 	
 }
 
-class PersonalData
-{
-	public $Applicant_FirstName;
-	public $Applicant_LastName;
-	public $Applicant_BirthDate;
-	public $Applicant_PhoneNumber;
-	public $Applicant_MailAdress;
-	public $Applicant_Picture;
-	public $Applicant_Street;
-	public $Applicant_HouseNumber;
-	public $Applicant_ZipCode;
-	public $Applicant_City;
-}
-
-class DesignConfiguration
-{
-	public $Design_Theme;
-	public $Design_SiteTemplate;
-	public $Design_MailTemplate;
-	public $bUseCDN;
-}
-
-
-class ContentData
-{
-	public $IntroText;
-	public $CVData;
-	public $RefData;
-	public $PersonalText;
-}
 
 
 class Bewerbung 
@@ -131,7 +101,7 @@ class Bewerbung
 	* ....Dokumentation unvollständig
 	*/
 	
-	public function GenerateApplication($jsonfile, $contactname, $contactgender, $applicant_picture, $applicant_name,$applicant_jobtitle,$applicant_birthdate,$applicant_adress, $applicant_phone,$applicant_mailadress,$applicant_twitter,$applicant_facebook,$applicant_github,$applicant_xing, $introtext,$cvdata_lebenslauf, $cvdata_abschluesse, $portfoliodata,$aboutdata) {
+	public function GenerateApplication($token, $jsonfile, $contactname, $contactgender, $applicant_picture, $applicant_name,$applicant_jobtitle,$applicant_birthdate,$applicant_adress, $applicant_phone,$applicant_mailadress,$applicant_twitter,$applicant_facebook,$applicant_github,$applicant_xing, $introtext,$cvdata_lebenslauf, $cvdata_abschluesse, $portfoliodata,$aboutdata) {
 		
 		
 		
@@ -198,6 +168,7 @@ class Bewerbung
 		$template->set('application_jsonfile', $jsonfile);
 		$template->set('lebenslaufcontent', $lebenslaufcontent);
 		$template->set('abschlusscontent', $abschlusscontent);
+		$template->set('token', $token);
 		echo $template->render();
 
 	
@@ -220,13 +191,13 @@ class Bewerbung
 	* @data	String		Token welches verschlüsselte Daten beinhaltet
 	* @return	Boolean	Status der Authorisierung
 	*/
-	public function ProcessToken($token) {
+	public function ProcessToken($token, $asarray) {
 		$jsonfile = $this->decrypt($token);
-		
+		$this->token = $token;
 		
 		$url =  "http://" . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'].'data/'.$jsonfile.'json';
 		$content = file_get_contents($url);
-		$json = json_decode($content, true);
+		$json = json_decode($content, $asarray);
 
 		return $json;
 	}
@@ -238,27 +209,25 @@ class Bewerbung
 	*/
 	public function Sendmail($absender,$absenderadresse,$infomessage,$termindatum,$terminzeit,$receiveradress) {
 	
-		
+
+	// E-Mail Header setzen und html aktivieren
 	$headers = "MIME-Version: 1.0\n";
 	$headers .= "Content-type: text/html; charset=iso-8859-1\n";
 	$headers .= "From: <".$absenderadresse.">\n";
 	$headers .= "X-Priority: 1\n";
 			
+			
+		// Template laden und Variablen ersetzen
+		$template = new Template('templates/mail/'.$this->s_template.'.php');
+		$template->set('absender', $absender);
+		$template->set('absenderadresse', $absenderadresse);
+		$template->set('infomessage', $infomessage);
+		$template->set('termindatum', $termindatum);
+		$template->set('terminzeit', $terminzeit);
+		$template->set('receiveradress', $receiveradress);
+		
 		// HTML E-Mail Nachricht erzeugen
-		$mailmessage = $this->GeneratePage("Antwort",'
-			<h1>Antwort auf deine Bewerbung</h1><br />
-			<p>Sehr geehrter Bewerber,</p>
-			<p>Du scheinst Interesse geweckt zu haben!<br />
-			'.$absender.' hat dir folgende Informationen hinterlassen:</p>
-			<p>&nbsp;</p>
-			<p><strong>Vorstellungstermin:</strong><br />
-			 Am '.$termindatum.' um '.$terminzeit.'
-			</p>
-			<p><strong>Weitere Informationen:<br />
-			</strong>'.$infomessage.'</p>
-			<p><strong>Antwort Adresse:</strong><br />
-			'.$absenderadresse.'
-				</p>',$this->theme);
+		$mailmessage = $template->render();
 		
 		// Versendet die E-Mail
 		$result = mail($receiveradress, "Antwort von Bewerbung", $mailmessage, $headers);
@@ -394,6 +363,36 @@ class Template
     }
 }
 
+class PersonalData
+{
+	public $Applicant_FirstName;
+	public $Applicant_LastName;
+	public $Applicant_BirthDate;
+	public $Applicant_PhoneNumber;
+	public $Applicant_MailAdress;
+	public $Applicant_Picture;
+	public $Applicant_Street;
+	public $Applicant_HouseNumber;
+	public $Applicant_ZipCode;
+	public $Applicant_City;
+}
+
+class DesignConfiguration
+{
+	public $Design_Theme;
+	public $Design_SiteTemplate;
+	public $Design_MailTemplate;
+	public $bUseCDN;
+}
+
+
+class ContentData
+{
+	public $IntroText;
+	public $CVData;
+	public $RefData;
+	public $PersonalText;
+}
 
 
 ?>
